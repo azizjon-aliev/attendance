@@ -1,0 +1,313 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_urls static admin_modify %}
+
+
+{% block field_sets %}
+<div class="form-row">
+    <div style="color: red" id="error_group"></div>
+    <div class="actions">
+        <label>
+            {% if change %}
+            Группа
+            {% else %}
+            Выберите группу
+            {% endif %}:
+            <select name="action" id="group" {% if change %}disabled{% endif %}>
+                {% if add %}
+                <option value="" selected="">---------</option>
+                {% endif %}
+                {% if change %}
+                <option value="{{attendance.group.id}}" selected>{{attendance.group}}</option>
+                {% else %}
+                {% for group in groups %}
+                <option value="{{group.id}}">{{group}}</option>
+                {% endfor %}
+                {% endif %}
+            </select>
+        </label>
+    </div>
+</div>
+<div class="form-row">
+    <div style="color: red" id="error_date"></div>
+    <div class="actions">
+        <label>{% if add %}Выберите дату{% else %}Дата{% endif %}:
+            <input type="date" class="vTextField" style="margin-left: 5px" id="date" {% if change %}value="{{attendance.date|date:'Y-m-d'}}" {% endif %}>
+        </label>
+    </div>
+</div>
+<div class="form-row">
+    <table id="result_list" style="width: 100%">
+        <thead>
+        <tr>
+            <th scope="col" class="column-__str__">
+                <div class="text"><span>#</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__str__">
+                <div class="text"><span>Студент</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>1</span></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>2</span></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>3</span></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>4</span></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>5</span></div>
+            </th>
+        </tr>
+        </thead>
+        <input type="hidden" value="{% if change %}{{students|length}}{% else %}0{% endif %}" id="total_students">
+        <tbody id="students">
+        {% for student in students %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td style="display: none">
+                    <input type="text" id="students_{{forloop.counter0}}_id" value="{{ student.students_id }}">
+                </td>
+                <td>{{student.students__fio}}</td>
+                <td>
+                    <label>
+                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_1" {% if student.time_1 == 1 %}checked{% endif %}>
+                    </label>
+                </td>
+                <td>
+                    <label>
+                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_2" {% if student.time_2 == 1 %}checked{% endif %}>
+                    </label>
+                </td>
+                <td>
+                    <label>
+                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_3" {% if student.time_3 == 1 %}checked{% endif %}>
+                    </label>
+                </td>
+                <td>
+                    <label>
+                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_4" {% if student.time_4 == 1 %}checked{% endif %}>
+                    </label>
+                </td>
+                <td>
+                    <label>
+                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_5" {% if student.time_5 == 1 %}checked{% endif %}>
+                    </label>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block submit_buttons_bottom %}
+<div class="submit-row">
+    <input type="submit" value="{% if add %}Сохранить{% else %}Изменить{% endif %}" class="default" id="save">
+    {% if change %}
+    <p class="deletelink-box"><a href="/admin/attendance/attendance/{{attendance.id}}/delete/" class="deletelink">Удалить</a></p>
+    {% endif %}
+</div>
+<script src="{% static 'attendance/js/jquery.min.js' %}"></script>
+<script>
+    function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+    function validate(id) {
+            let data = $("#" + id).val()
+
+            if (data !== "") {
+                $("#error_" + id).text("")
+                return data
+            }
+
+            $("#error_" + id).text("Это поля обезятелний")
+            return false
+        }
+
+    function getStudents(count)
+    {
+        let data = []
+
+        for (let i = 0; i < count; i++) {
+            data.push({
+                "id": $("#students_" + i + "_id").val(),
+                "time_1": $("#students_" + i + "_time_1").is(":checked"),
+                "time_2": $("#students_" + i + "_time_2").is(":checked"),
+                "time_3": $("#students_" + i + "_time_3").is(":checked"),
+                "time_4": $("#students_" + i + "_time_4").is(":checked"),
+                "time_5": $("#students_" + i + "_time_5").is(":checked"),
+            })
+        }
+        return data
+    }
+</script>
+{% if add %}
+<script>
+    $(function () {
+        const url = "{% url 'students' %}";
+
+        $("#save").click(function (e) {
+            e.preventDefault();
+
+            let date = validate("date")
+            let group = validate("group")
+
+            if (date && group) {
+                let total = $("#total_students").val()
+                let students = getStudents(total);
+
+                if (total === 0) {
+                    return alert("Error students");
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '{% url "attendance" %}',
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    data: {
+                        'date': date,
+                        'group': group,
+                        'students': students,
+                        'total_students': total
+                    },
+                    dataType: "json",
+                    encode: true,
+                    success: function (data) {
+                        window.location.href = "/attendance/attendance/"
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Вы не можете добавить данные в эту группу и день")
+                    }
+                });
+            }
+        })
+
+        $("#group").on('change', () => {
+            let group = validate("group");
+
+            if (group) {
+                $.ajax({
+                    url: url,
+                    data: {
+                        'group': group
+                    },
+                    success: function ({data}) {
+                        const students = $("#students");
+                        const total_students = data.length
+                        students.empty();
+
+                        if (total_students > 0) {
+                            $("#total_students").val(total_students);
+
+                            $.each(data, function (key, value) {
+                                students.append(`
+                                <tr>
+                                    <td>${key + 1}</td>
+                                    <td style="display: none">
+                                        <input type="text" id="students_${key}_id" value="${value.id}">
+                                    </td>
+                                    <td>${value.fio}</td>
+                                    <td>
+                                        <label>
+                                            <input type='checkbox' id="students_${key}_time_1">
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input type='checkbox' id="students_${key}_time_2">
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input type='checkbox' id="students_${key}_time_3">
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input type='checkbox' id="students_${key}_time_4">
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input type='checkbox' id="students_${key}_time_5">
+                                        </label>
+                                    </td>
+                                </tr>
+                            `)
+                            })
+                        } else {
+                            students.append(`
+                            <tr style="text-align: center">
+                                <td colspan="7">
+                                    Результат филтра пусть
+                                </td>
+                            </tr>
+                        `)
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% else %}
+<script>
+    $(function () {
+        $("#save").click(function (e) {
+            e.preventDefault();
+
+            let total = $("#total_students").val()
+            let date = validate("date")
+            let students = getStudents(total);
+
+            if (date) {
+                $.ajax({
+                    type: "PUT",
+                    url: "{% url 'attendance' %}",
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    data: {
+                        'attendance_id': "{{attendance.id}}",
+                        'date': date,
+                        'students': students,
+                        'total_students': total
+                    },
+                    dataType: "json",
+                    encode: true,
+                    success: function (data) {
+                        console.log(data);
+                        window.location.href = "{% url 'admin:attendance' %}"
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Вы не можете добавить данные в эту группу и день")
+                    }
+                });
+            }
+        })
+    });
+</script>
+{% endif %}
+{% endblock %}
+
+

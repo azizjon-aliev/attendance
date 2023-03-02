@@ -1,0 +1,200 @@
+{% extends 'admin/change_list.html' %}
+
+{% load static %}
+
+{% block object-tools %}
+{{ block.super }}
+<div class="module" id="changelist">
+    <div class="changelist-form-container">
+        <div style="color: red" id="error_group"></div>
+        <div class="actions">
+            <label>Выберите группу:
+                <select name="action" id="group">
+                    <option value="" selected="">---------</option>
+                    {% for group in groups %}
+                    <option value="{{group.id}}">{{group}}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div style="color: red" id="error_date-start"></div>
+        <div class="actions">
+            <label>Выберите дату от:
+                <input type="date" class="vTextField" style="margin-left: 5px" id="date-start">
+            </label>
+        </div>
+        <div style="color: red" id="error_date-end"></div>
+        <div class="actions">
+            <label>Выберите дату до:
+                <input type="date" class="vTextField" style="margin-left: 5px" id="date-end">
+            </label>
+            <button class="button"
+                    id="getStudents">Выполнить
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block object-tools-items %}
+{{ block.super }}
+<li id="edit_btn" style="display: none">
+    <a href="edit/" class="addlink">
+        Изменить посещаемость
+    </a>
+</li>
+{% endblock %}
+
+
+{% block result_list %}
+<div class="results">
+    <table id="result_list">
+        <thead>
+        <tr>
+            <th scope="col" class="column-__str__">
+                <div class="text"><span>#</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__str__">
+                <div class="text"><span>Студент</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>1</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>2</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>3</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>4</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>5</span></div>
+                <div class="clear"></div>
+            </th>
+        </tr>
+        </thead>
+        <tbody id="students">
+        <tr style="text-align: center">
+            <td colspan="7">
+                No data !
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script src="{% static 'attendance/js/jquery.min.js' %}"></script>
+<script>
+    function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+    function validate(id) {
+            let data = $("#" + id).val()
+
+            if (data !== "") {
+                $("#error_" + id).text("")
+                return data
+            }
+
+            $("#error_" + id).text("Это поля обезятелний")
+            return false
+        }
+
+    function getStudents(count)
+    {
+        let data = []
+
+        for (let i = 0; i < count; i++) {
+            data.push({
+                "id": $("#students_" + i + "_id").val(),
+                "time_1": $("#students_" + i + "_time_1").is(":checked"),
+                "time_2": $("#students_" + i + "_time_2").is(":checked"),
+                "time_3": $("#students_" + i + "_time_3").is(":checked"),
+                "time_4": $("#students_" + i + "_time_4").is(":checked"),
+                "time_5": $("#students_" + i + "_time_5").is(":checked"),
+            })
+        }
+        return data
+    }
+</script>
+<script>
+    $(function () {
+        const url = "{% url 'attendance' %}";
+
+        // GET all todos
+        $("#getStudents").on('click', () => {
+            let date_end = $("#date-end").val();
+            let group = validate("group")
+            let date_start = validate("date-start")
+
+            if (group && date_start) {
+                $.ajax({
+                    url: url,
+                    data: {
+                        'date-start': date_start,
+                        'date-end': date_end,
+                        'group': group
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        // const students = $("#students");
+                        // students.empty();
+                        //
+                        // if (data.length > 0) {
+                        //     if (date_end === "") {
+                        //         $("#edit_btn").show()
+                        //     } else {
+                        //         $("#edit_btn").hide()
+                        //     }
+                        //
+                        //     $.each(data, function (key, value) {
+                        //         students.append(`
+                        //         <tr>
+                        //             <td>${key + 1}</td>
+                        //             <td>${value.students__fio}</td>
+                        //             <td>${value.time_1}</td>
+                        //             <td>${value.time_2}</td>
+                        //             <td>${value.time_3}</td>
+                        //             <td>${value.time_4}</td>
+                        //             <td>${value.time_5}</td>
+                        //         </tr>
+                        //     `)
+                        //     })
+                        // } else {
+                        //     $("#edit_btn").hide()
+                        //
+                        //     students.append(`
+                        //     <tr style="text-align: center">
+                        //         <td colspan="7">
+                        //             Результат филтра пусть
+                        //         </td>
+                        //     </tr>
+                        // `)
+                        // }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
