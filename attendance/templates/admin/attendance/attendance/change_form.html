@@ -31,7 +31,7 @@
     <div style="color: red" id="error_date"></div>
     <div class="actions">
         <label>{% if add %}Выберите дату{% else %}Дата{% endif %}:
-            <input type="date" class="vTextField" style="margin-left: 5px" id="date" {% if change %}value="{{attendance.date|date:'Y-m-d'}}" {% endif %}>
+            <input type="date" class="vTextField" style="margin-left: 5px" id="date" {% if change %} disabled value="{{attendance.date|date:'Y-m-d'}}" {% endif %}>
         </label>
     </div>
 </div>
@@ -67,38 +67,38 @@
         <input type="hidden" value="{% if change %}{{students|length}}{% else %}0{% endif %}" id="total_students">
         <tbody id="students">
         {% for student in students %}
-            <tr>
-                <td>{{forloop.counter}}</td>
-                <td style="display: none">
-                    <input type="text" id="students_{{forloop.counter0}}_id" value="{{ student.students_id }}">
-                </td>
-                <td>{{student.students__fio}}</td>
-                <td>
-                    <label>
-                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_1" {% if student.time_1 == 1 %}checked{% endif %}>
-                    </label>
-                </td>
-                <td>
-                    <label>
-                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_2" {% if student.time_2 == 1 %}checked{% endif %}>
-                    </label>
-                </td>
-                <td>
-                    <label>
-                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_3" {% if student.time_3 == 1 %}checked{% endif %}>
-                    </label>
-                </td>
-                <td>
-                    <label>
-                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_4" {% if student.time_4 == 1 %}checked{% endif %}>
-                    </label>
-                </td>
-                <td>
-                    <label>
-                        <input type="checkbox" id="students_{{ forloop.counter0 }}_time_5" {% if student.time_5 == 1 %}checked{% endif %}>
-                    </label>
-                </td>
-            </tr>
+        <tr>
+            <td>{{forloop.counter}}</td>
+            <td style="display: none">
+                <input type="text" id="students_{{forloop.counter0}}_id" value="{{ student.students_id }}">
+            </td>
+            <td>{{student.students__fio}}</td>
+            <td>
+                <label>
+                    <input type="checkbox" id="students_{{ forloop.counter0 }}_time_1" {% if student.time_1 == 1 %}checked{% endif %}>
+                </label>
+            </td>
+            <td>
+                <label>
+                    <input type="checkbox" id="students_{{ forloop.counter0 }}_time_2" {% if student.time_2 == 1 %}checked{% endif %}>
+                </label>
+            </td>
+            <td>
+                <label>
+                    <input type="checkbox" id="students_{{ forloop.counter0 }}_time_3" {% if student.time_3 == 1 %}checked{% endif %}>
+                </label>
+            </td>
+            <td>
+                <label>
+                    <input type="checkbox" id="students_{{ forloop.counter0 }}_time_4" {% if student.time_4 == 1 %}checked{% endif %}>
+                </label>
+            </td>
+            <td>
+                <label>
+                    <input type="checkbox" id="students_{{ forloop.counter0 }}_time_5" {% if student.time_5 == 1 %}checked{% endif %}>
+                </label>
+            </td>
+        </tr>
         {% endfor %}
         </tbody>
     </table>
@@ -109,41 +109,41 @@
 <div class="submit-row">
     <input type="submit" value="{% if add %}Сохранить{% else %}Изменить{% endif %}" class="default" id="save">
     {% if change %}
-    <p class="deletelink-box"><a href="/admin/attendance/attendance/{{attendance.id}}/delete/" class="deletelink">Удалить</a></p>
+    <p class="deletelink-box"><a href="/admin/attendance/attendance/{{attendance.id}}/delete/" class="deletelink">Удалить</a>
+    </p>
     {% endif %}
 </div>
 <script src="{% static 'attendance/js/jquery.min.js' %}"></script>
 <script>
     function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
+        return cookieValue;
+    }
 
     function validate(id) {
-            let data = $("#" + id).val()
+        let data = $("#" + id).val()
 
-            if (data !== "") {
-                $("#error_" + id).text("")
-                return data
-            }
-
-            $("#error_" + id).text("Это поля обезятелний")
-            return false
+        if (data !== "") {
+            $("#error_" + id).text("")
+            return data
         }
 
-    function getStudents(count)
-    {
+        $("#error_" + id).text("Это поля обезятелний")
+        return false
+    }
+
+    function getStudents(count) {
         let data = []
 
         for (let i = 0; i < count; i++) {
@@ -180,7 +180,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: '{% url "attendance" %}',
+                    url: '{% url "attendance-create" %}',
                     headers: {
                         "X-CSRFToken": getCookie('csrftoken')
                     },
@@ -277,33 +277,33 @@
             e.preventDefault();
 
             let total = $("#total_students").val()
-            let date = validate("date")
             let students = getStudents(total);
 
-            if (date) {
-                $.ajax({
-                    type: "PUT",
-                    url: "{% url 'attendance' %}",
-                    headers: {
-                        "X-CSRFToken": getCookie('csrftoken')
-                    },
-                    data: {
-                        'attendance_id': "{{attendance.id}}",
-                        'date': date,
-                        'students': students,
-                        'total_students': total
-                    },
-                    dataType: "json",
-                    encode: true,
-                    success: function (data) {
-                        console.log(data);
-                        window.location.href = "{% url 'admin:attendance' %}"
-                    },
-                    error: function (xhr, status, error) {
+            $.ajax({
+                type: "PUT",
+                url: "{% url 'attendance-update' %}",
+                headers: {
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                dataType: 'json',
+                data: JSON.stringify({
+                    'attendance_id': "{{attendance.id}}",
+                    'students': students,
+                }),
+                success: function (data) {
+                    console.log(data);
+                    window.location.href = "/attendance/attendance/"
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 500) {
+                        alert("Server Error")
+                    }
+                    if (xhr.status === 422) {
                         alert("Вы не можете добавить данные в эту группу и день")
                     }
-                });
-            }
+                    console.log(xhr, status, error)
+                }
+            });
         })
     });
 </script>

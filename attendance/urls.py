@@ -6,7 +6,9 @@ from core import settings
 
 urlpatterns = [
     path("students/", views.students, name="students"),
-    path("attendance/", views.attendances, name="attendance"),
+    path("attendances/", views.get_attendance, name="attendance"),
+    path("attendances/add", views.create_attendance, name="attendance-create"),
+    path("attendances/edit", views.update_attendance, name="attendance-update"),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
 ]

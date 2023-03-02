@@ -38,8 +38,8 @@
 
 {% block object-tools-items %}
 {{ block.super }}
-<li id="edit_btn" style="display: none">
-    <a href="edit/" class="addlink">
+<li>
+    <a id="edit_btn" href="edit/" class="addlink" style="display: none">
         Изменить посещаемость
     </a>
 </li>
@@ -155,42 +155,43 @@
                         'date-end': date_end,
                         'group': group
                     },
-                    success: function (data) {
-                        console.log(data);
-                        // const students = $("#students");
-                        // students.empty();
-                        //
-                        // if (data.length > 0) {
-                        //     if (date_end === "") {
-                        //         $("#edit_btn").show()
-                        //     } else {
-                        //         $("#edit_btn").hide()
-                        //     }
-                        //
-                        //     $.each(data, function (key, value) {
-                        //         students.append(`
-                        //         <tr>
-                        //             <td>${key + 1}</td>
-                        //             <td>${value.students__fio}</td>
-                        //             <td>${value.time_1}</td>
-                        //             <td>${value.time_2}</td>
-                        //             <td>${value.time_3}</td>
-                        //             <td>${value.time_4}</td>
-                        //             <td>${value.time_5}</td>
-                        //         </tr>
-                        //     `)
-                        //     })
-                        // } else {
-                        //     $("#edit_btn").hide()
-                        //
-                        //     students.append(`
-                        //     <tr style="text-align: center">
-                        //         <td colspan="7">
-                        //             Результат филтра пусть
-                        //         </td>
-                        //     </tr>
-                        // `)
-                        // }
+                    success: function ({data, attendance_pk}) {
+                        const students = $("#students");
+                        const btn_edit = $("#edit_btn");
+                        students.empty();
+
+                        if (data.length > 0) {
+                            if (date_end === "") {
+                               btn_edit.show()
+                                btn_edit.attr('href', `${attendance_pk}/change/`)
+                            } else {
+                                btn_edit.hide()
+                            }
+
+                            $.each(data, function (key, value) {
+                                students.append(`
+                                <tr>
+                                    <td>${key + 1}</td>
+                                    <td>${value.students__fio}</td>
+                                    <td>${value.time_1}</td>
+                                    <td>${value.time_2}</td>
+                                    <td>${value.time_3}</td>
+                                    <td>${value.time_4}</td>
+                                    <td>${value.time_5}</td>
+                                </tr>
+                            `)
+                            })
+                        } else {
+                            btn_edit.hide()
+
+                            students.append(`
+                            <tr style="text-align: center">
+                                <td colspan="7">
+                                    Результат филтра пусть
+                                </td>
+                            </tr>
+                        `)
+                        }
                     }
                 });
             }
