@@ -35,7 +35,7 @@
         </label>
     </div>
 </div>
-<div class="form-row">
+<div class="form-row" style="overflow-x:auto;">
     <table id="result_list" style="width: 100%">
         <thead>
         <tr>
@@ -48,19 +48,22 @@
                 <div class="clear"></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>1</span></div>
+                <div class="text"><span>1 час</span></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>2</span></div>
+                <div class="text"><span>2 час</span></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>3</span></div>
+                <div class="text"><span>3 час</span></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>4</span></div>
+                <div class="text"><span>4 час</span></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>5</span></div>
+                <div class="text"><span>5 час</span></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>Все час</span></div>
             </th>
         </tr>
         </thead>
@@ -98,6 +101,11 @@
                     <input type="checkbox" id="students_{{ forloop.counter0 }}_time_5" {% if student.time_5 == 1 %}checked{% endif %}>
                 </label>
             </td>
+            <td>
+                <label>
+                    <input type="checkbox" value="{{ forloop.counter0 }}" onchange="test(this)">
+                </label>
+            </td>
         </tr>
         {% endfor %}
         </tbody>
@@ -109,12 +117,24 @@
 <div class="submit-row">
     <input type="submit" value="{% if add %}Сохранить{% else %}Изменить{% endif %}" class="default" id="save">
     {% if change %}
-    <p class="deletelink-box"><a href="/admin/attendance/attendance/{{attendance.id}}/delete/" class="deletelink">Удалить</a>
+    <p class="deletelink-box"><a href="/attendance/attendance/{{attendance.id}}/delete/" class="deletelink">Удалить</a>
     </p>
     {% endif %}
 </div>
 <script src="{% static 'attendance/js/jquery.min.js' %}"></script>
 <script>
+    function test(e)
+    {
+        let id = $(e).val()
+        let check = $(e).is(":checked")
+
+        $("#students_" + id + "_time_1").prop('checked', check)
+        $("#students_" + id + "_time_2").prop('checked', check)
+        $("#students_" + id + "_time_3").prop('checked', check)
+        $("#students_" + id + "_time_4").prop('checked', check)
+        $("#students_" + id + "_time_5").prop('checked', check)
+    }
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -162,6 +182,11 @@
 {% if add %}
 <script>
     $(function () {
+        let now = new Date();
+        let day = ("0" + now.getDate()).slice(-2);
+        let month = ("0" + (now.getMonth() + 1)).slice(-2);
+        let today = now.getFullYear() + "-" + (month) + "-" + (day);
+        $('#date').val(today);
         const url = "{% url 'students' %}";
 
         $("#save").click(function (e) {
@@ -250,6 +275,11 @@
                                     <td>
                                         <label>
                                             <input type='checkbox' id="students_${key}_time_5">
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label>
+                                            <input type='checkbox' value="${key}" onchange="test(this)">
                                         </label>
                                     </td>
                                 </tr>

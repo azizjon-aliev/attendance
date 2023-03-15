@@ -1,6 +1,7 @@
 import json
-
-from django.db.models import Sum
+import xlwt
+from django.http import HttpResponse
+from django.db.models import Sum, F
 from django.shortcuts import render
 from .models import Attendance, AttendanceStatus, Group, Student
 from django.http import HttpResponseRedirect, HttpResponseNotFound, HttpResponse, JsonResponse, HttpResponseBadRequest
@@ -35,6 +36,7 @@ def get_attendance(request):
                 time_3=Sum('time_3'),
                 time_4=Sum('time_4'),
                 time_5=Sum('time_5'),
+                time_total=F('time_1') + F('time_2') + F('time_3') + F('time_4') + F('time_5'),
             ).order_by('students_id')
 
             return JsonResponse({
@@ -100,6 +102,67 @@ def update_attendance(request):
     else:
         return HttpResponseBadRequest('Invalid request')
 
+
+
+def export_attendances_xls(request):
+    if request.method == 'GET':
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="attendances.xls"'
+
+        wb = xlwt.Workbook(encoding='utf-8')
+        ws = wb.add_sheet('Attendances Data')  # this will make a sheet named Users Data
+
+        # Sheet header, first row
+        row_num = 0
+
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+
+        columns = ['Студент', '1 час', '2 час', '3 час', '4 час', '5 час', 'Итог']
+
+        for col_num in range(len(columns)):
+            ws.write(row_num, col_num, columns[col_num], font_style)  # at 0 row 0 column
+
+        # Sheet body, remaining rows
+        font_style = xlwt.XFStyle()
+
+        date_start = request.GET.get('date_start')
+        date_end = request.GET.get('date_end')
+        group_id = request.GET.get('group')
+        attendance_pk = None
+
+        print(date_start, date_end, group_id)
+
+        if date_end:
+            attendance_status = AttendanceStatus.objects.filter(attendance__date__range=[date_start, date_end],
+                                                                attendance__group_id=group_id)
+        else:
+            attendance = Attendance.objects.filter(date=date_start, group_id=group_id)
+
+            if len(attendance) > 0:
+                attendance_pk = attendance[0].id
+
+            attendance_status = AttendanceStatus.objects.filter(attendance_id=attendance_pk)
+
+        rows = attendance_status.values_list('students__fio').annotate(
+            time_1=Sum('time_1'),
+            time_2=Sum('time_2'),
+            time_3=Sum('time_3'),
+            time_4=Sum('time_4'),
+            time_5=Sum('time_5'),
+            time_total=F('time_1') + F('time_2') + F('time_3') + F('time_4') + F('time_5'),
+        ).order_by('students_id')
+
+        for row in rows:
+            row_num += 1
+            for col_num in range(len(row)):
+                ws.write(row_num, col_num, row[col_num], font_style)
+
+        wb.save(response)
+
+        return response
+    else:
+        return HttpResponseBadRequest('Invalid request')
 
 def students(request):
     if is_ajax(request):

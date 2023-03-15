@@ -37,17 +37,20 @@
 {% endblock %}
 
 {% block object-tools-items %}
-{{ block.super }}
 <li>
-    <a id="edit_btn" href="edit/" class="addlink" style="display: none">
+    <a id="export_btn" href="#" class="addlink" style="display: none">
+        Export
+    </a>
+    <a id="edit_btn" href="edit/" class="addlink" style="margin-left: 5px; display: none">
         Изменить посещаемость
     </a>
 </li>
+{{ block.super }}
 {% endblock %}
 
 
 {% block result_list %}
-<div class="results">
+<div class="results" style="overflow-x:auto;">
     <table id="result_list">
         <thead>
         <tr>
@@ -60,23 +63,27 @@
                 <div class="clear"></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>1</span></div>
+                <div class="text"><span>1 час</span></div>
                 <div class="clear"></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>2</span></div>
+                <div class="text"><span>2 час</span></div>
                 <div class="clear"></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>3</span></div>
+                <div class="text"><span>3 час</span></div>
                 <div class="clear"></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>4</span></div>
+                <div class="text"><span>4 час</span></div>
                 <div class="clear"></div>
             </th>
             <th scope="col" class="column-__int__">
-                <div class="text"><span>5</span></div>
+                <div class="text"><span>5 час</span></div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-__int__">
+                <div class="text"><span>Итог</span></div>
                 <div class="clear"></div>
             </th>
         </tr>
@@ -158,15 +165,19 @@
                     success: function ({data, attendance_pk}) {
                         const students = $("#students");
                         const btn_edit = $("#edit_btn");
+                        const btn_export = $("#export_btn");
                         students.empty();
 
                         if (data.length > 0) {
                             if (date_end === "") {
-                               btn_edit.show()
+                                btn_edit.show()
                                 btn_edit.attr('href', `${attendance_pk}/change/`)
                             } else {
                                 btn_edit.hide()
                             }
+
+                            btn_export.show()
+                            btn_export.attr('href', `{% url 'export_excel' %}?date_start=${date_start}&date_end=${date_end}&group=${group}`)
 
                             $.each(data, function (key, value) {
                                 students.append(`
@@ -178,6 +189,7 @@
                                     <td>${value.time_3}</td>
                                     <td>${value.time_4}</td>
                                     <td>${value.time_5}</td>
+                                    <td>${value.time_total}</td>
                                 </tr>
                             `)
                             })

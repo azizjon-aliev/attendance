@@ -5,6 +5,7 @@ from attendance import views
 from core import settings
 
 urlpatterns = [
+    path('attendances/export/excel/', views.export_attendances_xls, name='export_excel'),
     path("students/", views.students, name="students"),
     path("attendances/", views.get_attendance, name="attendance"),
     path("attendances/add", views.create_attendance, name="attendance-create"),

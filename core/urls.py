@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from attendance.views import export_attendances_xls
+
 urlpatterns = [
     path('api/v1/', include('attendance.urls')),
     path('', admin.site.urls),

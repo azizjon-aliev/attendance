@@ -2,17 +2,54 @@ from datetime import datetime
 from django.db import models
 
 
+class Faculty(models.Model):
+    title = models.CharField(verbose_name="Названия", max_length=150, unique=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Факультет'
+        verbose_name_plural = 'Факультеты'
+
+
+class Department(models.Model):
+    title = models.CharField(verbose_name="Названия", max_length=150, unique=True)
+    faculty = models.ForeignKey(Faculty, verbose_name='Факультет', blank=False, null=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Кафедра'
+        verbose_name_plural = 'Кафедры'
+
+
+class Specialty(models.Model):
+    number = models.CharField(verbose_name="Номер", max_length=150, unique=True)
+    title = models.CharField(verbose_name="Названия", max_length=150, unique=True)
+    department = models.ForeignKey(Department, verbose_name='Кафедра', blank=False, null=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.number} - {self.title}"
+
+    class Meta:
+        verbose_name = 'Специальность'
+        verbose_name_plural = 'Специальности'
+
 class Group(models.Model):
     """ Группа """
     sub_group = models.CharField(verbose_name='Под группа', max_length=2, null=False, choices=[
-        ('A', 'A'),
-        ('B', 'B'),
-        ('C', 'C'),
+        ('а', 'а'),
+        ('б', 'б'),
+        ('в', 'в'),
+        ('г', 'г'),
+        ('д', 'д'),
     ])
-    language = models.CharField(verbose_name='Язык', max_length=2, null=False, choices=[
-        ('tj', 'tj'),
-        ('ru', 'ru'),
-        ('en', 'en'),
+    language = models.CharField(verbose_name='Язык', max_length=15, null=False, choices=[
+        ('таджикский', 'таджикский'),
+        ('русский', 'русский'),
+        ('английский', 'английский'),
     ])
     course = models.CharField(verbose_name='Курс', max_length=10, null=False, choices=[
         ('1', '1'),
@@ -20,13 +57,18 @@ class Group(models.Model):
         ('3', '3'),
         ('4', '4'),
     ])
+    typeOfTraining = models.CharField(verbose_name='Вид обучения', max_length=30, null=False, choices=[
+        ('рӯзона', 'рӯзона'),
+        ('фосилави', 'фосилави'),
+    ])
+    specialty = models.ForeignKey(Specialty, verbose_name='Специальность', blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.sub_group} {self.language} {self.course}"
+        return f"{self.specialty.number}{self.sub_group} курси {self.course}{self.language}"
 
     class Meta:
-        verbose_name = 'Группа'
-        verbose_name_plural = 'Группы'
+        verbose_name = 'Группа студентов'
+        verbose_name_plural = 'Группы студентов'
 
 
 class Student(models.Model):
