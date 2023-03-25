@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,14 +21,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3)@1osog*^*%3q(7c3zc+-p6a+tn@_il9c+=r7hjq=0!7!e15z'
+SECRET_KEY = 'some-secret-key-here-please-change-it-to-your-own'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# security.W018
 DEBUG = True
 
-ALLOWED_HOSTS = []
-# ALLOWED_HOSTS = ['.vercel.app']
+# security.W016
+CSRF_COOKIE_SECURE = True
 
+# security.W012
+SESSION_COOKIE_SECURE = True
+
+# security.W008
+SECURE_SSL_REDIRECT = True
+
+# security.W004
+SECURE_HSTS_SECONDS = 31536000 # One year in seconds
+
+# Another security settings
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+ALLOWED_HOSTS = ['azizjon-aliev-attendance.fly.dev']
+
+CSRF_TRUSTED_ORIGINS=['https://azizjon-aliev-attendance.fly.dev']
 
 # Application definition
 
@@ -125,6 +143,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Fix too many redirects error
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
